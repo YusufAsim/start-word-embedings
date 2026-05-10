@@ -25,8 +25,18 @@ def document_vector(text):
     Returns:
         np.ndarray: document vector with shape (300,)
     """
-    # TODO: Implement
-    pass
+    tokens = text.split()
+    vectors = []
+
+    for token in tokens:
+        if token in model:
+            vectors.append(model[token])
+
+    if len(vectors) == 0:
+        return np.zeros(EMBEDDING_DIM, dtype=np.float32)
+
+    average_vector = np.mean(vectors, axis=0)
+    return average_vector.astype(np.float32)
 
 
 def prepare_classification_data(file_path):
@@ -47,8 +57,24 @@ def prepare_classification_data(file_path):
         X (np.ndarray): feature matrix with shape (N, 300)
         y (np.ndarray): label vector with shape (N,)
     """
-    # TODO: Implement
-    pass
+    df = pd.read_csv(file_path)
+    X = []
+    y = []
+
+    for _, row in df.iterrows():
+        review = str(row["review"])
+        sentiment = row["sentiment"]
+
+        X.append(document_vector(review))
+
+        if sentiment == "positive":
+            y.append(1)
+        else:
+            y.append(0)
+
+    X = np.array(X, dtype=np.float32)
+    y = np.array(y, dtype=np.int64)
+    return X, y
 
 
 def train_classifier(X_train, y_train,
