@@ -10,6 +10,20 @@ model = gensim.downloader.load("word2vec-google-news-300")
 EMBEDDING_DIM = 300
 
 
+class SentimentClassifier(nn.Module):
+    def __init__(self, input_dim, hidden_dim):
+        super().__init__()
+        self.hidden = nn.Linear(input_dim, hidden_dim)
+        self.activation = nn.ReLU()
+        self.output = nn.Linear(hidden_dim, 1)
+
+    def forward(self, x):
+        x = self.hidden(x)
+        x = self.activation(x)
+        x = self.output(x)
+        return x.squeeze(-1)
+
+
 def document_vector(text):
     """
     Convert text into a single vector by averaging word embeddings.
@@ -100,8 +114,28 @@ def train_classifier(X_train, y_train,
     Returns:
         torch.nn.Module: trained neural network classifier
     """
-    # TODO: Implement
-    pass
+    torch.manual_seed(42)
+
+    train_features = torch.tensor(X_train, dtype=torch.float32)
+    train_labels = torch.tensor(y_train, dtype=torch.float32)
+
+    train_data = TensorDataset(train_features, train_labels)
+    train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
+
+    clf = SentimentClassifier(EMBEDDING_DIM, hidden_dim)
+    loss_fn = nn.BCEWithLogitsLoss()
+    optimizer = torch.optim.Adam(clf.parameters(), lr=learning_rate)
+
+    clf.train()
+    for epoch in range(epochs):
+        for batch_X, batch_y in train_loader:
+            optimizer.zero_grad()
+            outputs = clf(batch_X)
+            loss = loss_fn(outputs, batch_y)
+            loss.backward()
+            optimizer.step()
+
+    return clf
 
 def evaluate_classifier(clf, X_test, y_test):
     """
@@ -124,5 +158,41 @@ def evaluate_classifier(clf, X_test, y_test):
             "f1": float
         }
     """
-    # TODO: Implement
-    pass
+    test_features = torch.tensor(X_test, dtype=torch.float32)
+
+    clf.eval()
+    with torch.no_grad():
+        outputs = clf(test_features)
+        probabilities = torch.sigmoid(outputs)
+        predicted_labels = (probabilities >= 0.5).to(torch.int64).cpu().numpy()
+
+    y_true = np.asarray(y_test, dtype=np.int64)
+    y_pred = np.asarray(predicted_labels, dtype=np.int64)
+
+    true_positive = np.sum((y_true == 1) & (y_pred == 1))
+    true_negative = np.sum((y_true == 0) & (y_pred == 0))
+    false_positive = np.sum((y_true == 0) & (y_pred == 1))
+    false_negative = np.sum((y_true == 1) & (y_pred == 0))
+
+    accuracy = (true_positive + true_negative) / len(y_true)
+    if true_positive + false_positive == 0:
+        precision = 0.0
+    else:
+        precision = true_positive / (true_positive + false_positive)
+
+    if true_positive + false_negative == 0:
+        recall = 0.0
+    else:
+        recall = true_positive / (true_positive + false_negative)
+
+    if precision + recall == 0:
+        f1 = 0.0
+    else:
+        f1 = 2 * precision * recall / (precision + recall)
+
+    return {
+        "accuracy": float(accuracy),
+        "precision": float(precision),
+        "recall": float(recall),
+        "f1": float(f1),
+    }
