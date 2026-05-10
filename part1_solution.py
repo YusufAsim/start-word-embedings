@@ -53,13 +53,50 @@ def most_similar_sentences(file_path, query):
     """
     Rank sentences by cosine similarity to query.
     """
-    # TODO: Implement
-    pass
+    _, query_vec = sentence_vector(query)
+    query_norm = np.linalg.norm(query_vec)
+    sentence_scores = []
+
+    with open(file_path, "r", encoding="utf-8") as file:
+        for line in file:
+            sentence = line.strip()
+            if not sentence:
+                continue
+
+            _, sentence_vec = sentence_vector(sentence)
+            sentence_norm = np.linalg.norm(sentence_vec)
+
+            if query_norm == 0 or sentence_norm == 0:
+                cosine_similarity = 0.0
+            else:
+                cosine_similarity = float(
+                    np.dot(query_vec, sentence_vec) / (query_norm * sentence_norm)
+                )
+
+            sentence_scores.append((sentence, cosine_similarity))
+
+    sentence_scores.sort(key=lambda item: item[1], reverse=True)
+    return sentence_scores
 
 
 def analyze_dimension_contributions(word1, word2, top_k=10):
     """
     Analyze dimension-wise contributions.
     """
-    # TODO: Implement
-    pass
+    word1_vector = model[word1]
+    word2_vector = model[word2]
+    contribution_values = word1_vector * word2_vector
+    results = []
+
+    for i in range(len(contribution_values)):
+        results.append(
+            (
+                i,
+                float(contribution_values[i]),
+                float(word1_vector[i]),
+                float(word2_vector[i]),
+            )
+        )
+
+    results.sort(key=lambda item: abs(item[1]), reverse=True)
+    return results[:top_k]
