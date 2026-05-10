@@ -7,7 +7,7 @@ and output format. It is not the hidden test script.
 Before running this file, rename your solution file or update the import line below.
 """
 
-from part1_solution  import (
+from part1_solution import (
     replace_with_similar,
     sentence_vector,
     most_similar_sentences,
