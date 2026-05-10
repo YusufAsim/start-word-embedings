@@ -1,0 +1,10 @@
+Document vector length: 300
+First 5 values: [-0.01861572  0.02576701 -0.04201253  0.09552002 -0.05117289]
+
+X shape: (10000, 300)
+y shape: (10000,)
+Number of positive labels: 5000
+Number of negative labels: 5000
+
+Evaluation results on the sample subset:
+{'accuracy': 0.835, 'precision': 0.8343313373253493, 'recall': 0.836, 'f1': 0.8351648351648352}

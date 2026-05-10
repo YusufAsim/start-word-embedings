@@ -1,0 +1,71 @@
+"""
+Sample input script for Part I.
+
+This file is provided only to help you understand the expected function calls
+and output format. It is not the hidden test script.
+
+Before running this file, rename your solution file or update the import line below.
+"""
+
+from part1_solution  import (
+    replace_with_similar,
+    sentence_vector,
+    most_similar_sentences,
+    analyze_dimension_contributions,
+)
+
+with open("sample_output_part1_generated.txt", "w", encoding="utf-8") as f:
+    sentence = "NLP is a fascinating field of study and I love learning about it"
+    indices = [3, 4, 10]
+
+    new_sentence, most_similar_dict = replace_with_similar(sentence, indices)
+
+    print(most_similar_dict.keys(), end="\n\n", file=f)
+    print(most_similar_dict["fascinating"], end="\n\n", file=f)
+    print(most_similar_dict["field"], end="\n\n", file=f)
+    print(most_similar_dict["learning"], end="\n\n", file=f)
+    print(new_sentence, end="\n\n", file=f)
+
+    print("----------------------------------------------------------------------------------------------------", end="\n\n", file=f)
+
+    vector_dict, sentence_vec = sentence_vector("I am a student studying NLP at Hacettepe University")
+
+    print(vector_dict.keys(), end="\n\n", file=f)
+    print(vector_dict["I"][:5], end="\n\n", file=f)
+    print(vector_dict["studying"][145:150], end="\n\n", file=f)
+    print(vector_dict["Hacettepe"][295:], end="\n\n", file=f)
+    print(len(sentence_vec), end="\n\n", file=f)
+
+    print("----------------------------------------------------------------------------------------------------", end="\n\n", file=f)
+
+    file_path = "sentences_sample.txt"
+
+    query1 = "Is swimming a good sport ?"
+    results1 = most_similar_sentences(file_path, query1)
+    for sentence, score in results1[:3]:
+        print(f"{score:.5f} -> {sentence}", end="\n\n", file=f)
+
+    print("--------------------------------------------------", end="\n\n", file=f)
+
+    query2 = "Does Turkey have good universities ?"
+    results2 = most_similar_sentences(file_path, query2)
+    for sentence, score in results2[:3]:
+        print(f"{score:.5f} -> {sentence}", end="\n\n", file=f)
+
+    print("--------------------------------------------------", end="\n\n", file=f)
+
+    query3 = "What happened to your backpack ?"
+    results3 = most_similar_sentences(file_path, query3)
+    for sentence, score in results3[:3]:
+        print(f"{score:.5f} -> {sentence}", end="\n\n", file=f)
+
+    print("----------------------------------------------------------------------------------------------------", end="\n\n", file=f)
+
+    pairs = [("good", "great"), ("good", "bad"), ("car", "banana")]
+
+    for word1, word2 in pairs:
+        print(f"{word1} {word2}", file=f)
+        results = analyze_dimension_contributions(word1, word2, top_k=5)
+        for item in results:
+            print(item, file=f)
+        print("", file=f)
